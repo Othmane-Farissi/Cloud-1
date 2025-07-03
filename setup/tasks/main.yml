@@ -1,0 +1,17 @@
+- name: Update and Upgrade apt packages
+  apt:
+    update_cache: true
+    upgrade: dist
+
+- name: Install docker 
+  apt:
+    name: docker.io
+    state: present
+
+- name: Install docker-compose
+  apt:
+    name: docker-compose
+    state: present
+
+- name: Create directories and copy files
+- name: Deploy application with docker-compose
