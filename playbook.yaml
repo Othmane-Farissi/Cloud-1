@@ -1,5 +1,5 @@
 - name: ALL IN ONE
-  hosts: my_vms
+  hosts: wordpress
   become: true
   serial: 2
   roles:
