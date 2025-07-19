@@ -1,11 +1,10 @@
 FROM debian:bookworm
 
-RUN apt-get update -y
-RUN apt-get install -y mariadb-server
+RUN apt-get update -y && apt-get install -y mariadb-server
 
-COPY /tools/db.sh ./startup.sh
+COPY ./tools/db.sh /db.sh
 COPY ./config/50-server.cnf /etc/mysql/mariadb.conf.d/
 
 EXPOSE 3306
 
-CMD ["bash", "startup.sh"]
+CMD ["bash", "/db.sh"]
