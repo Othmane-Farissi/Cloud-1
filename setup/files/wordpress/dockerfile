@@ -10,7 +10,7 @@ RUN cd /var/www/ && wget https://wordpress.org/latest.tar.gz && tar xvf latest.t
  
 RUN cd /var/www && rm -f latest.tar.gz
 
-COPY ./config/www.conf /etc/php/7.3/fpm/pool.d/
+COPY ./config/www.conf /etc/php/8.2/fpm/pool.d/
 
 COPY ./config/wp /usr/local/bin/
 

@@ -2,14 +2,14 @@ services:
   db:
     env_file:
       - .env
-    build: ./mariadb/.
+    build: ./mariadb/
     container_name: maria-cont
     image: mariadb:mytag
     restart: always
     networks:
       - app-network
     volumes:
-      - DataBase:/var/lib/mysql/
+      - /opt/wordpress/volumes/db:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-u$$MY_USER", "-p$$MY_PASS"]
       interval: 10s
@@ -22,12 +22,12 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    build: ./wordpress/.
+    build: ./wordpress/
     container_name: wordpress-cont
     image: wordpress:mytag
     restart: always
     volumes:
-      - Wordpress:/var/www/wordpress
+      - /opt/wordpress/volumes/wordpress:/opt/wordpress
     networks:
       - app-network
     
@@ -40,7 +40,7 @@ services:
     container_name: phpmyadmin-cont
     restart: always
     volumes:
-      - PhpMyAdmin:/var/www/html
+      - /opt/wordpress/volumes/phpmyadmin:/opt/html
     networks:
       - app-network
 
@@ -48,37 +48,17 @@ services:
     depends_on:
       - wordpress
       - phpmyadmin
-    build: ./nginx/.
+    build: ./nginx/
     container_name: nginx-cont
     image: nginx:mytag
     ports:
       - "443:443"
     restart: always
     volumes:
-      - Wordpress:/var/www/wordpress
-      - PhpMyAdmin:/var/www/html
+      - /opt/wordpress/volumes/wordpress:/opt/wordpress
+      - /opt/wordpress/volumes/phpmyadmin:/opt/html
     networks:
       - app-network
-  
-volumes:
-  DataBase:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./volumes/db
-  Wordpress:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./volumes/wordpress
-  PhpMyAdmin:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./volumes/phpmyadmin
 
 networks:
   app-network:

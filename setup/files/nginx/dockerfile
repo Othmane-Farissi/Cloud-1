@@ -8,15 +8,15 @@ COPY ./config/nginx.conf /etc/nginx/
 
 
 # Create a directory for the wordpress
-RUN mkdir -p /var/www/wordpress
+RUN mkdir -p /opt/wordpress
 
 # Create a directory for the phpmyadmin
-RUN mkdir -p /var/www/html
+RUN mkdir -p /opt/html
 
-RUN chown -R www-data.www-data /var/www/ \
-   && chmod -R 755 /var/www/
+RUN chown -R www-data.www-data /opt/ \
+   && chmod -R 755 /opt/
 
-#COPY website /var/www/html
+#COPY website /opt/html
 # CREATE CERTIFICATE TO USING HTTPS
 RUN apt-get -y install openssl
 
