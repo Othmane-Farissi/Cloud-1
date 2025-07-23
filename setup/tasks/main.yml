@@ -1,51 +1,31 @@
-#SPDX-License-Identifier: MIT-0
----
-#tasks file for setup
-- name: Update and Upgrade apt packages
+- name : Install docker
   apt:
-    update_cache: true
-    upgrade: dist
-  ignore_errors: true 
+      name: docker.io
+      state: present # it means install if missing
 
-- name: Install docker 
+- name : Install docker-compose
   apt:
-    name: docker.io
-    state: present
+      name: docker-compose
+      state: present
 
-- name: Install docker-compose
-  apt:
-    name: docker-compose
-    state: present
-  
-- name: Create a directory for binding DB
+- name: Check how long copying takes
+  command: date
+
+- name: Create deployment directory
   file:
-    path: /etc/db
-    state: directory
-    mode: '0755'
-  
-- name: Create a directory for binding Wordpress
-  file:
-    path: /etc/files
-    state: directory
-    mode: '0755'
-  
-- name: Create a directory for my application
-  file:
-    path: /home/application
+    path: /opt/wordpress
     state: directory
     mode: '0755'
 
-- name: Copy the .env file
-  ansible.builtin.template:
-    src: ../templates/data.j2 
-    dest: /home/application/.env
-
-- name: Copy files only if different
-  ansible.builtin.copy:
+- name: Copy docker-compose and app files (excluding volumes)
+  synchronize:
     src: files/
-    dest: /home/application/
-  notify: run docker-compose
+    dest: /opt/wordpress/
+    rsync_opts:
+      - "--exclude=volumes/"
 
-
-
-
+- name: Run docker-compose up
+  command: docker-compose up -d
+  args:
+        chdir: /opt/wordpress/
+        
