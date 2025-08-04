@@ -2,14 +2,14 @@ services:
   db:
     env_file:
       - .env
-    build: ./mariadb/
+    build: ./mariadb/.
     container_name: maria-cont
     image: mariadb:mytag
     restart: always
     networks:
       - app-network
     volumes:
-      - /opt/wordpress/volumes/db:/var/lib/mysql
+      - DataBase:/var/lib/mysql/
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-u$$MY_USER", "-p$$MY_PASS"]
       interval: 10s
@@ -22,15 +22,27 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    build: ./wordpress/
+    build: ./wordpress/.
     container_name: wordpress-cont
-    image: wordpress:mytag
-    restart: always
+    restart: unless-stopped
     volumes:
-      - /opt/wordpress/volumes/wordpress:/opt/wordpress
+      - Wordpress:/var/www/html  # Removed the extra hyphen
+    environment:
+      - WORDPRESS_DB_HOST=db
+      - WORDPRESS_DB_USER=${MYSQL_USER}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
+      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+      - IP=${IP}
+      - BLOG_TITLE=${BLOG_TITLE}
+      - AD_USER=${AD_USER}
+      - AD_PASSWORD=${AD_PASS}
+      - AD_EMAIL=${AD_EMAIL}
+      - SP_USER=${SP_USER}
+      - SP_EMAIL=${SP_EMAIL}
+      - SP_PASS=${SP_PASS}
     networks:
       - app-network
-    
+     
   phpmyadmin:
     depends_on:
       - db
@@ -40,7 +52,7 @@ services:
     container_name: phpmyadmin-cont
     restart: always
     volumes:
-      - /opt/wordpress/volumes/phpmyadmin:/opt/html
+      - phpmyadmin_data:/var/www/html
     networks:
       - app-network
 
@@ -48,17 +60,38 @@ services:
     depends_on:
       - wordpress
       - phpmyadmin
-    build: ./nginx/
+    build: ./nginx/.
     container_name: nginx-cont
     image: nginx:mytag
     ports:
       - "443:443"
     restart: always
     volumes:
-      - /opt/wordpress/volumes/wordpress:/opt/wordpress
-      - /opt/wordpress/volumes/phpmyadmin:/opt/html
+      - Wordpress:/var/www/wordpress
+      - phpmyadmin_data:/var/www/html
     networks:
       - app-network
 
-networks:
+volumes:
+  Wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /etc/files
+  DataBase:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /etc/db
+  phpmyadmin_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /etc/phpmyadmin
+
+networks:  
   app-network:
+    name: web-network

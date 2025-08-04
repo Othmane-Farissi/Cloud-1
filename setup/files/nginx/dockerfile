@@ -1,5 +1,5 @@
 # you need to create your own network cause there is no default ip
-FROM debian:bookworm
+FROM debian:bullseye 
 
 RUN apt-get -y update --fix-missing  && apt-get -y install nginx
 
@@ -8,15 +8,15 @@ COPY ./config/nginx.conf /etc/nginx/
 
 
 # Create a directory for the wordpress
-RUN mkdir -p /opt/wordpress
+RUN mkdir -p /var/www/wordpress
 
 # Create a directory for the phpmyadmin
-RUN mkdir -p /opt/html
+RUN mkdir -p /var/www/html
 
-RUN chown -R www-data.www-data /opt/ \
-   && chmod -R 755 /opt/
+RUN chown -R www-data.www-data /var/www/ \
+   && chmod -R 755 /var/www/
 
-#COPY website /opt/html
+#COPY website /var/www/html
 # CREATE CERTIFICATE TO USING HTTPS
 RUN apt-get -y install openssl
 

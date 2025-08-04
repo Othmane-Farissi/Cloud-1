@@ -1,5 +1,0 @@
----
-mysql_root_password: rootpass
-mysql_user: wpuser
-mysql_password: wppass
-mysql_database: wp_db

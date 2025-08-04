@@ -1,5 +1,9 @@
-# handlers/main.yml
-- name: Restart docker
-  service:
-    name: docker
-    state: restarted
+#SPDX-License-Identifier: MIT-0
+---
+# handlers file for setup
+- name: run docker-compose
+  shell: "docker compose down && docker image prune -af && docker compose up --build -d"
+  args: 
+    chdir: /home/application
+  async: 1800
+  poll: 30

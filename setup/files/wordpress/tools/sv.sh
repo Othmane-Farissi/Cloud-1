@@ -1,22 +1,32 @@
+#!/bin/bash
 
-service php7.3-fpm start
-service php7.3-fpm stop
+# Start PHP-FPM in background
+service php-fpm start
 
-# mkdir -p /var/www/html
-# cd /var/www/html
-# wget https://wordpress.org/latest.tar.gz
-# tar xvf latest.tar.gz
-# cd /var/www/html
-# rm -f latest.tar.gz
+# Wait for database to be ready
+while ! mysqladmin ping -h"db" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --silent; do
+  echo "Waiting for database..."
+  sleep 2
+done
 
+# Configure WordPress
+if [ ! -f /var/www/html/wp-config.php ]; then
+  wp core download --allow-root
+  wp config create \
+    --dbname="$MYSQL_DATABASE" \
+    --dbuser="$MYSQL_USER" \
+    --dbpass="$MYSQL_PASSWORD" \
+    --dbhost="db" \
+    --allow-root
+  
+  wp core install \
+    --url="http://${IP:-localhost}" \
+    --title="${BLOG_TITLE:-WordPress}" \
+    --admin_user="${AD_USER:-admin}" \
+    --admin_password="${AD_PASSWORD:-password}" \
+    --admin_email="${AD_EMAIL:-admin@example.com}" \
+    --allow-root
+fi
 
-
-cd /var/www/wordpress
-#wp core download --allow-root
-wp core config --dbname=$MY_DATABASE --dbuser=$MY_USER --dbpass=$MY_PASS --dbhost=$MY_HOST --path=/var/www/wordpress --allow-root
-wp core install --url="http://$IP" --title=$BLOG_TITLE --admin_user=$AD_USER --admin_password=$AD_PASS --admin_email=$AD_EMAIL --path=/var/www/wordpress  --allow-root
-wp option update siteurl "http://$IP" --path=/var/www/wordpress --allow-root
-wp option update home "http://$IP" --path=/var/www/wordpress --allow-root
-wp user create $SP_USER $SP_EMAIL --role=subscriber --user_pass=$SP_PASS --path=/var/www/wordpress  --allow-root
-
+# Keep PHP-FPM running in foreground
 php-fpm7.3 -F

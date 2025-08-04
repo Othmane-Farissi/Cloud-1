@@ -1,6 +1,7 @@
-- name: ALL IN ONE
+- name: Deploy WordPress
   hosts: wordpress
   become: true
-  serial: 2
+  vars_files:
+    - "{{ playbook_dir }}/setup/vars/secrets.yml"  # Absolute path
   roles:
     - setup

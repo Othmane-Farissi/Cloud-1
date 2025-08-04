@@ -1,3 +1,6 @@
-my_database: default_db
-my_user: duser
-my_pass: dpass
+# Database Configuration
+mysql_user: "wpuser"
+mysql_database: "wordpress"
+
+# Path Configuration
+docker_compose_dir: "/opt/wordpress"

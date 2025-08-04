@@ -1,4 +1,16 @@
-MY_ROOT={{ mysql_root_password }}
-MY_USER={{ mysql_user }}
-MY_PASS={{ mysql_password }}
-MY_DATABASE={{ mysql_database }}
+# Database
+MYSQL_ROOT_PASSWORD={{ mysql_root_password }}
+MYSQL_USER={{ mysql_user }}
+MYSQL_PASSWORD={{ mysql_password }}
+MYSQL_DATABASE={{ mysql_database }}
+
+# WordPress
+WORDPRESS_DB_HOST=db
+WORDPRESS_DB_USER={{ mysql_user }}
+WORDPRESS_DB_PASSWORD={{ mysql_password }}
+WORDPRESS_DB_NAME={{ mysql_database }}
+
+# phpMyAdmin
+PMA_HOST=db
+PMA_USER={{ mysql_user }}
+PMA_PASSWORD={{ mysql_password }}

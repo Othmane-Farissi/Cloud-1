@@ -1,31 +1,104 @@
-- name : Install docker
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for setup
+
+- name: Update and Upgrade apt packages
   apt:
-      name: docker.io
-      state: present # it means install if missing
+    update_cache: true
+    upgrade: dist
+  ignore_errors: true
+  tags: system
 
-- name : Install docker-compose
+- name: Install required system packages
   apt:
-      name: docker-compose
-      state: present
+    name:
+      - docker.io
+      - python3-pip
+      - curl
+    state: present
+    update_cache: true
+  tags: packages
 
-- name: Check how long copying takes
-  command: date
+- name: Ensure Docker service is running and enabled
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  tags: docker
 
-- name: Create deployment directory
+- name: Add current user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+  tags: docker
+
+- name: Remove old docker-compose v1 if present
   file:
-    path: /opt/wordpress
+    path: /usr/local/bin/docker-compose
+    state: absent
+  ignore_errors: true
+  tags: docker-compose
+
+- name: Install Docker Compose v2 plugin (official method)
+  block:
+    - name: Create CLI plugins directory
+      file:
+        path: ~/.docker/cli-plugins/
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker Compose
+      ansible.builtin.get_url:
+        url: https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64
+        dest: ~/.docker/cli-plugins/docker-compose
+        mode: '0755'
+  tags: docker-compose
+
+- name: Verify Docker Compose installation
+  command: docker compose version
+  register: compose_version
+  changed_when: false
+  ignore_errors: true
+  tags: docker-compose
+
+- name: Create symlink for docker-compose
+  file:
+    src: /usr/bin/docker
+    dest: /usr/local/bin/docker-compose
+    state: link
+  ignore_errors: true
+  tags: docker-compose
+
+- name: Create directory structure
+  file:
+    path: "{{ item }}"
     state: directory
     mode: '0755'
+  loop:
+    - /etc/db
+    - /etc/files
+    - /home/application
+  tags: directories
 
-- name: Copy docker-compose and app files (excluding volumes)
-  synchronize:
+- name: Ensure phpMyAdmin directory exists
+  file:
+    path: /etc/phpmyadmin
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  tags: directories
+
+- name: Deploy .env file
+  ansible.builtin.template:
+    src: ../templates/data.j2
+    dest: /home/application/.env
+  tags: config
+
+- name: Deploy application files
+  ansible.builtin.copy:
     src: files/
-    dest: /opt/wordpress/
-    rsync_opts:
-      - "--exclude=volumes/"
-
-- name: Run docker-compose up
-  command: docker-compose up -d
-  args:
-        chdir: /opt/wordpress/
-        
+    dest: /home/application/
+  notify: run docker-compose
+  tags: deploy
