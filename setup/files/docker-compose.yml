@@ -4,14 +4,18 @@ services:
       - .env
     build: ./mariadb/.
     container_name: maria-cont
-    image: mariadb:mytag
     restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - DataBase:/var/lib/mysql
     networks:
       - app-network
-    volumes:
-      - DataBase:/var/lib/mysql/
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-u$$MY_USER", "-p$$MY_PASS"]
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -26,7 +30,7 @@ services:
     container_name: wordpress-cont
     restart: unless-stopped
     volumes:
-      - Wordpress:/var/www/html  # Removed the extra hyphen
+      - Wordpress:/var/www/html  
     environment:
       - WORDPRESS_DB_HOST=db
       - WORDPRESS_DB_USER=${MYSQL_USER}

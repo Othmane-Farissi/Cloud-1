@@ -2,5 +2,3 @@
 mysql_user: "wpuser"
 mysql_database: "wordpress"
 
-# Path Configuration
-docker_compose_dir: "/opt/wordpress"
