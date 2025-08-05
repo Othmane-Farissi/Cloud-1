@@ -18,10 +18,10 @@ services:
     container_name: mariadb
     build: ./requirements/mariadb/.
     environment:
-      MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD}  # Changed from MYSQL_ROOT_PASSWORD
-      MARIADB_DATABASE: ${DATABASE}            # Changed from MYSQL_DATABASE
-      MARIADB_USER: ${USER}                    # Changed from MYSQL_USER
-      MARIADB_PASSWORD: ${USER_PASSWORD}       # Changed from MYSQL_PASSWORD
+      MARIADB_ROOT_PASSWORD: M34d0wpYd2xwd8EL  # Changed from MYSQL_ROOT_PASSWORD
+      MARIADB_DATABASE: wordpress            # Changed from MYSQL_DATABASE
+      MARIADB_USER: wpuser                    # Changed from MYSQL_USER
+      MARIADB_PASSWORD: x95g93bYGyvuyBrJ       # Changed from MYSQL_PASSWORD
       MARIADB_HOST: mariadb
     image: mariadb
     networks:
@@ -45,6 +45,7 @@ services:
     volumes:
       - wp-vol:/var/www/html 
     restart: always
+    
 volumes:
   wp-vol:
     driver: local
