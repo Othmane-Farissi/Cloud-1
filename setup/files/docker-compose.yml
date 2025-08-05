@@ -17,6 +17,12 @@ services:
   mariadb:
     container_name: mariadb
     build: ./requirements/mariadb/.
+    environment:
+      MARIADB_ROOT_PASSWORD: ${ROOT_PASSWORD}  # Changed from MYSQL_ROOT_PASSWORD
+      MARIADB_DATABASE: ${DATABASE}            # Changed from MYSQL_DATABASE
+      MARIADB_USER: ${USER}                    # Changed from MYSQL_USER
+      MARIADB_PASSWORD: ${USER_PASSWORD}       # Changed from MYSQL_PASSWORD
+      MARIADB_HOST: mariadb
     image: mariadb
     networks:
       - net
