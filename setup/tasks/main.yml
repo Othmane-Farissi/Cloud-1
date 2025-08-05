@@ -66,16 +66,39 @@
   ignore_errors: true
   tags: docker-compose
 
-- name: Create required directories
-  file:
-    path: "{{ item }}"
+
+- name: Create application data directory
+  ansible.builtin.file:
+    path: /home/application/data
     state: directory
     mode: '0755'
-  loop:
-    - /etc/db
-    - /etc/files
-    - /home/application
-  tags: directories
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+
+- name: Create MariaDB volume directory
+  ansible.builtin.file:
+    path: /home/application/data/mariadb
+    state: directory
+    mode: '0755'
+    owner: "999"  # MariaDB typically runs as UID 999
+    group: "999"
+
+- name: Create WordPress volume directory
+  ansible.builtin.file:
+    path: /home/application/data/wordpress
+    state: directory
+    mode: '0755'
+    owner: "www-data"  # Typically UID 33
+    group: "www-data"
+
+- name: Verify directory structure
+  ansible.builtin.command: ls -la /home/application/data
+  register: dir_listing
+  changed_when: false
+
+- name: Display directory structure
+  ansible.builtin.debug:
+    var: dir_listing.stdout_lines
 
 - name: Ensure phpMyAdmin directory exists
   file:

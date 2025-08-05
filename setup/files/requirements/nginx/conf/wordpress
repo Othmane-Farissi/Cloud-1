@@ -1,0 +1,39 @@
+server {
+    listen 443 ssl;
+    listen 80;
+    server_name 10.13.250.44;
+    
+    # SSL Configuration
+    include snippets/self-signed.conf;
+    include snippets/ssl-params.conf;
+    
+    # WordPress Root - Must match your volume mount
+    root /var/www/html;  # Changed from /var/www/wordpress
+    index index.php index.html index.htm;
+    
+    # Static files
+    location = /favicon.ico { log_not_found off; access_log off; }
+    location = /robots.txt { log_not_found off; access_log off; allow all; }
+    location ~* \.(css|gif|ico|jpeg|jpg|js|png)$ {
+        expires max;
+        log_not_found off;
+    }
+    
+    # WordPress routing
+    location / {
+        try_files $uri $uri/ /index.php$is_args$args;
+    }
+    
+    # PHP handling
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass wordpress:9000;  # Must match your WordPress service name
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+    
+    # Security
+    location ~ /\.ht {
+        deny all;
+    }
+}
