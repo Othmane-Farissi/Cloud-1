@@ -1,40 +1,40 @@
 #!/bin/bash
+
 set -e
 
- # Wait for database
-if [ -n "$WORDPRESS_DB_PASSWORD" ]; then
-    MYSQL_PWD_ARG="-p$WORDPRESS_DB_PASSWORD"
-else
-    MYSQL_PWD_ARG=""
-fi
-while ! mysqladmin ping -h"mariadb" -u"$WORDPRESS_DB_USER" $MYSQL_PWD_ARG --silent; do
-    sleep 1
-done
-if [ -n "$WORDPRESS_DB_PASSWORD" ]; then
-    MYSQL_PWD_ARG="-p$WORDPRESS_DB_PASSWORD"
-else
-    MYSQL_PWD_ARG=""
-fi
-while ! mysqladmin ping -h"mariadb" -u"$WORDPRESS_DB_USER" $MYSQL_PWD_ARG --silent; do
+sleep 10
 
-# Install WordPress if not installed
-if [ ! -f wp-config.php ]; then
-    wp core download --allow-root
+WP_PATH="/var/www/html"
+
+if [ ! -f "$WP_PATH/wp-config.php" ]; then
+    echo "Downloading WordPress..."
+    wp core download --allow-root --path="$WP_PATH"
+
+    echo "Creating wp-config.php..."
     wp config create \
-        --dbname="$DATABASE"\
-        --dbuser="$USER"\
-        --dbpass="$USER_PASSWORD" \
-        --dbhost="mariadb" \
-        --allow-root
-    
+        --allow-root \
+        --dbname=$DATABASE \
+        --dbuser=$USER \
+        --dbpass=$USER_PASSWORD \
+        --dbhost=mariadb:3306 \
+        --path="$WP_PATH"
+
+    echo "Installing WordPress..."
     wp core install \
-        --url="$IP" \
+        --allow-root \
         --title="$TITLE" \
+        --url="$IP" \
         --admin_user="$ADMIN_USER" \
-        --admin_password="$ADMIN_PASS" \
+        --admin_password="$ADMIN_PASSWORD" \
         --admin_email="$ADMIN_EMAIL" \
-        --allow-root
+        --path="$WP_PATH"
+
+    echo "Creating test user..."
+    wp user create testuser testuser@42.fr \
+        --role=author \
+        --user_pass="23061966" \
+        --allow-root \
+        --path="$WP_PATH"
 fi
 
-# Start PHP-FPM
-exec php-fpm8.2 -F
+exec php-fpm7.4 -F -R

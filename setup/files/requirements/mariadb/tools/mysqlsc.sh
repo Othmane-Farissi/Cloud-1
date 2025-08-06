@@ -1,26 +1,20 @@
 #!/bin/bash
-set -e
 
-# Start MariaDB
-mysqld_safe &
+service mariadb start
 
- # Wait for MariaDB to start
-if [ -n "$ROOT_PASSWORD" ]; then
-    MYSQL_PWD_ARG="-p$ROOT_PASSWORD"
-else
-    MYSQL_PWD_ARG=""
-fi
-while ! mysqladmin ping -uroot $MYSQL_PWD_ARG --silent; do
-    sleep 1
-done
 
- # Create database and user
-mysql -uroot $MYSQL_PWD_ARG <<-EOSQL
-    CREATE DATABASE IF NOT EXISTS $DATABASE;
-    CREATE USER IF NOT EXISTS '$USER'@'%' IDENTIFIED BY '$USER_PASSWORD';
-    GRANT ALL PRIVILEGES ON $DATABASE.* TO '$USER'@'%';
-    FLUSH PRIVILEGES;
-EOSQL
+mariadb -e "create database if not exists \`${DATABASE}\`;"
 
-# Keep container running
-tail -f /dev/null
+mariadb -e "create user if not exists  \`${USER}\`@'%' IDENTIFIED BY '${USER_PASSWORD}';"
+
+mariadb -e "grant all privileges on \`${DATABASE}\`.* TO \`${USER}\`@'%' IDENTIFIED BY '${USER_PASSWORD}';"
+
+mariadb -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${ROOT_PASSWORD}';"
+
+mariadb -e "FLUSH PRIVILEGES;"
+
+mysqladmin -u root -p$ROOT_PASSWORD shutdown
+
+exec mysqld_safe
+
+sleep 10

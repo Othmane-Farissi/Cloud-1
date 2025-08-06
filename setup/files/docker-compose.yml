@@ -17,17 +17,11 @@ services:
   mariadb:
     container_name: mariadb
     build: ./requirements/mariadb/.
-    environment:
-      MARIADB_ROOT_PASSWORD: M34d0wpYd2xwd8EL  # Changed from MYSQL_ROOT_PASSWORD
-      MARIADB_DATABASE: wordpress            # Changed from MYSQL_DATABASE
-      MARIADB_USER: wpuser                    # Changed from MYSQL_USER
-      MARIADB_PASSWORD: x95g93bYGyvuyBrJ       # Changed from MYSQL_PASSWORD
-      MARIADB_HOST: mariadb
     image: mariadb
     networks:
       - net
     env_file:
-      - ./.env   
+      - .env   
     volumes:  
       - mariadb-volume:/var/lib/mysql/
     restart: always
@@ -39,7 +33,7 @@ services:
     networks:
       - net
     env_file:
-      - ./.env
+      - .env
     depends_on:
       - mariadb
     volumes:
@@ -59,7 +53,8 @@ volumes:
       type: none
       device: /home/application/data/mariadb
       o: bind
+
 networks:
   net:
     name: docker_net
-    driver: bridge  
+    driver: bridge
