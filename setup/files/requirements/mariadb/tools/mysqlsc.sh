@@ -1,20 +1,20 @@
 #!/bin/bash
 
-service mariadb start
+# Wait for MariaDB to fully start
+until mariadb-admin ping --silent; do
+  echo "⏳ Waiting for MariaDB to be available..."
+  sleep 2
+done
 
+# Now use authenticated root access
+echo "✅ MariaDB is up, running initialization..."
 
-mariadb -e "create database if not exists \`${DATABASE}\`;"
+mariadb -u root -p"${ROOT_PASSWORD}" <<EOF
+CREATE DATABASE IF NOT EXISTS \`${DATABASE}\`;
+CREATE USER IF NOT EXISTS \`${USER}\`@'%' IDENTIFIED BY '${USER_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`${DATABASE}\`.* TO \`${USER}\`@'%';
+FLUSH PRIVILEGES;
+EOF
 
-mariadb -e "create user if not exists  \`${USER}\`@'%' IDENTIFIED BY '${USER_PASSWORD}';"
-
-mariadb -e "grant all privileges on \`${DATABASE}\`.* TO \`${USER}\`@'%' IDENTIFIED BY '${USER_PASSWORD}';"
-
-mariadb -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${ROOT_PASSWORD}';"
-
-mariadb -e "FLUSH PRIVILEGES;"
-
-mysqladmin -u root -p$ROOT_PASSWORD shutdown
-
-exec mysqld_safe
-
-sleep 10
+# Do NOT shut down the database!
+echo "✅ Initialization done."

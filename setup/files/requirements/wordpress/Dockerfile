@@ -22,9 +22,10 @@ RUN mkdir -p /run/php && \
 
 # 4. Copy configuration files
 COPY conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf 
-COPY tools/cli-config.sh /var/www/html/cli-config.sh
-RUN chmod +x /var/www/html/cli-config.sh
-
+# COPY tools/cli-config.sh /var/www/html/cli-config.sh
+# RUN ls -la /var/www/html/cli-config.sh && cat /var/www/html/cli-config.sh
+# RUN chmod +x /var/www/html/cli-config.sh
+COPY startup.sh /usr/local/bin/startup.sh
+RUN chmod +x /usr/local/bin/startup.sh
 # 5. Set working directory
-WORKDIR /var/www/html
-ENTRYPOINT ["sh", "/var/www/html/cli-config.sh"]
+ENTRYPOINT ["startup.sh"]
