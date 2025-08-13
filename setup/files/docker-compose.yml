@@ -1,78 +1,59 @@
 services:
-  nginx:
-    container_name: nginx
-    build: ./requirements/nginx/.
-    image: nginx
+  nginx: 
+    build: 
+      context: "./requirements/nginx"   
     ports:
-      - "443:443"
       - "80:80"
-    networks:
-      - net
-    volumes:
-      - wp-vol:/var/www/html 
-    depends_on:
-      - wordpress
-    restart: always
-
-  mariadb:
-    container_name: mariadb
-    build: ./requirements/mariadb/.
-    image: mariadb
-    environment:
-      MARIADB_ROOT_PASSWORD: "$ROOT_PASSWORD"  
-      MARIADB_DATABASE: "$DATABASE"            
-      MARIADB_USER: "$USER"                    
-      MARIADB_PASSWORD: "$USER_PASSWORD" 
-    networks:
-      - net
-    env_file:
-      - .env   
+      - "443:443"  
+    networks:  
+      - inception-net  
+    env_file:  
+      - .env
     volumes:  
-      - mariadb-volume:/var/lib/mysql/
-    restart: always
-    
-  wordpress:
-    container_name: wordpress
-    build: ./requirements/wordpress/.
-    image: wordpress
-    environment:
-      - WORDPRESS_DB_HOST=mariadb
-      - WORDPRESS_DB_USER=${USER}
-      - WORDPRESS_DB_PASSWORD=${USER_PASSWORD}
-      - WORDPRESS_DB_NAME=${DATABASE}
-      - WORDPRESS_TITLE=${TITLE}
-      - WORDPRESS_ADMIN_USER=${ADMIN_USER}
-      - WORDPRESS_ADMIN_PASSWORD=${ADMIN_PASS}
-      - WORDPRESS_ADMIN_EMAIL=${ADMIN_EMAIL}
-      - WORDPRESS_URL=${IP}
-    networks:
-      - net
+      -  wp_data:/var/www/html
+    depends_on:
+      - phpwordpress 
+
+  mariadb:  
+    build:  
+      context: "./requirements/Mariadb"  
+    ports:   
+      - "3306:3306"    
+    volumes:  
+      - mariadb_data:/var/lib/mysql
+    networks:  
+      - inception-net  
+    env_file:  
+      - .env 
+
+  phpwordpress:   
+    build:   
+      context: "./requirements/phpwordpress"  
+    ports: 
+      - "9000:9000"  
+    networks:   
+      - inception-net   
     env_file:
       - .env
+    volumes:  
+      - wp_data:/var/www/html
     depends_on:
       - mariadb
-    volumes:
-      # Keep your existing volume
-      - wp-vol:/var/www/html
-      # Add this line to mount the script directly
-      - ./requirements/wordpress/tools/cli-config.sh:/tmp/cli-config.sh
-    restart: always
-    
-volumes:
-  wp-vol:
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/application/data/wordpress
-      o: bind
-  mariadb-volume:
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/application/data/mariadb
-      o: bind
 
-networks:
-  net:
-    name: docker_net
-    driver: bridge
+networks: 
+  inception-net:
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${USER}/data/mariadb
+      o: bind 
+
+  wp_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${USER}/data/wp_data
+      o: bind

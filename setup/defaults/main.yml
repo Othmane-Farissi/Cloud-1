@@ -1,9 +1,13 @@
 # Database Configuration
-USER: "wpuser"
-DATABASE: "wordpress"
-IP: "10.13.250.44"  # e.g., 192.168.1.100 or example.com
-TITLE: "My_Blog"
-ADMIN_USER: "admin"
-ADMIN_EMAIL: "otmanefarissi77@gmail.com"
-SP_USER: "subscriber"
-SP_EMAIL: "otmanefarissi77@gmail.com"
+MYSQL_DATABASE: "wordpress_db"
+MYSQL_USER: "wp_user"
+
+WP_URL: "10.13.250.22"
+WP_TITLE: "My Local WordPress"
+WP_ADMIN_USER: "admin"
+
+WP_ADMIN_EMAIL: "admin@example.com"
+WP_REGULAR_USER: "johndoe"
+WP_REGULAR_EMAIL: "john@example.com"
+
+USER: "ofarissi"

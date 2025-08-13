@@ -1,7 +1,3 @@
-# SPDX-License-Identifier: MIT-0
----
-# tasks file for setup
-
 - name: Update and Upgrade apt packages
   apt:
     update_cache: true
@@ -33,66 +29,66 @@
     append: yes
   tags: docker
 
-- name: Remove legacy docker-compose v1 binary if present
+# Permanent Docker Compose V2 Solution
+- name: Create system-wide Docker plugins directory
+  become: yes
   file:
-    path: /usr/local/bin/docker-compose
-    state: absent
-  ignore_errors: true
+    path: /usr/local/lib/docker/cli-plugins
+    state: directory
+    mode: '0755'
   tags: docker-compose
 
-- name: Install Docker Compose v2 as CLI plugin
-  block:
-    - name: Create Docker CLI plugins directory
-      file:
-        path: "/home/{{ ansible_user }}/.docker/cli-plugins"
-        state: directory
-        mode: '0755'
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+- name: Download Docker Compose v2.27.0 (system-wide)
+  become: yes
+  get_url:
+    url: https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64
+    dest: /usr/local/lib/docker/cli-plugins/docker-compose
+    mode: '0755'
+  tags: docker-compose
 
-    - name: Download Docker Compose v2.27.0
-      get_url:
-        url: https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64
-        dest: "/home/{{ ansible_user }}/.docker/cli-plugins/docker-compose"
-        mode: '0755'
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+- name: Create symbolic link for backward compatibility
+  become: yes
+  file:
+    src: /usr/local/lib/docker/cli-plugins/docker-compose
+    dest: /usr/local/bin/docker-compose
+    state: link
+    force: yes
   tags: docker-compose
 
 - name: Verify Docker Compose installation
   command: docker compose version
-  register: compose_version
+  register: compose_check
   changed_when: false
-  ignore_errors: true
+  failed_when: "'Docker Compose version' not in compose_check.stdout"
   tags: docker-compose
 
-
+# Rest of your existing tasks...
 - name: Create application data directory
-  ansible.builtin.file:
-    path: /home/application/data
+  file:
+    path: "/home/{{ ansible_user }}/data"
     state: directory
     mode: '0755'
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_id }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
 
 - name: Create MariaDB volume directory
-  ansible.builtin.file:
-    path: /home/application/data/mariadb
+  file:
+    path: "/home/{{ ansible_user }}/data/mariadb"
     state: directory
     mode: '0755'
     owner: "999"  # MariaDB typically runs as UID 999
     group: "999"
 
 - name: Create WordPress volume directory
-  ansible.builtin.file:
-    path: /home/application/data/wordpress
+  file:
+    path: "/home/{{ ansible_user }}/data/wp_data"
     state: directory
     mode: '0755'
     owner: "www-data"  # Typically UID 33
     group: "www-data"
 
 - name: Verify directory structure
-  ansible.builtin.command: ls -la /home/application/data
+  ansible.builtin.command: ls -la /home/{{ ansible_user }}/data
   register: dir_listing
   changed_when: false
 
@@ -119,5 +115,5 @@
   copy:
     src: files/
     dest: /home/application/
-  notify: run docker-compose
+  notify: restart docker stack
   tags: deploy
