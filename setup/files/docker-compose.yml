@@ -25,6 +25,11 @@ services:
       - inception-net  
     env_file:  
       - .env 
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "${WP_URL}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   phpwordpress:   
     build:   
@@ -38,7 +43,29 @@ services:
     volumes:  
       - wp_data:/var/www/html
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: application-phpmyadmin
+    ports:
+      - "8080:80"
+    networks:
+      - inception-net
+    environment:
+      PMA_HOST: mariadb 
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 0
+      UPLOAD_LIMIT: 128M
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://${WP_URL}:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks: 
   inception-net:

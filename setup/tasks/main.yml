@@ -115,5 +115,43 @@
   copy:
     src: files/
     dest: /home/application/
-  notify: restart docker stack
+    mode: '0644'
+    force: yes  # Always overwrite files
+
+- name: Ensure Docker stack is running
+  block:
+    - name: Stop and remove existing containers
+      command: docker compose down
+      args:
+        chdir: /home/application
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Verify data directories exist
+      file:
+        path: "/home/{{ ansible_user }}/data/{{ item }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ '999' if item == 'mariadb' else 'www-data' }}"
+        group: "{{ '999' if item == 'mariadb' else 'www-data' }}"
+      loop:
+        - mariadb
+        - wp_data
+
+    - name: Start containers with health checks
+      command: docker compose up -d --build
+      args:
+        chdir: /home/application
+      register: compose_up
+      retries: 3
+      delay: 10
+      until: compose_up.rc == 0
+
+    - name: Verify containers are healthy
+      command: docker compose ps --services --filter "status=running"
+      args:
+        chdir: /home/application
+      register: running_services
+      changed_when: false
+      failed_when: "'mariadb' not in running_services.stdout or 'phpwordpress' not in running_services.stdout"
   tags: deploy

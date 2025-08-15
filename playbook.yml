@@ -2,6 +2,6 @@
   hosts: wordpress
   become: true
   vars_files:
-    - "{{ playbook_dir }}/setup/vars/secrets.yml"  # Absolute path
+    - "{{ playbook_dir }}/setup/vars/secrets.yml" 
   roles:
     - setup
