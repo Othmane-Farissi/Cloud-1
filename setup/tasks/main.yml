@@ -71,6 +71,14 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
 
+- name: Create application  directory
+  file:
+    path: "/home/application"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
 - name: Create MariaDB volume directory
   file:
     path: "/home/{{ ansible_user }}/data/mariadb"

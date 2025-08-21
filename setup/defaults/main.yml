@@ -2,7 +2,7 @@
 MYSQL_DATABASE: "wordpress_db"
 MYSQL_USER: "wp_user"
 
-WP_URL: "10.13.250.22"
+WP_URL: "13.48.133.116"
 WP_TITLE: "My Local WordPress"
 WP_ADMIN_USER: "admin"
 
@@ -10,4 +10,4 @@ WP_ADMIN_EMAIL: "admin@example.com"
 WP_REGULAR_USER: "johndoe"
 WP_REGULAR_EMAIL: "john@example.com"
 
-USER: "ofarissi"
+USER: "ubuntu"
