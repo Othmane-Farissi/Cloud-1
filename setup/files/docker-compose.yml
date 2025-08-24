@@ -3,17 +3,17 @@ services:
     build: 
       context: "./requirements/nginx"   
     ports:
-      - "80:80"
       - "443:443"  
     networks:  
       - inception-net  
     env_file:  
       - .env
     volumes:  
-      -  wp_data:/var/www/html
+      - wp_data:/var/www/html
     depends_on:
       - phpwordpress 
-
+    restart: always  
+    
   mariadb:  
     build:  
       context: "./requirements/Mariadb"  
@@ -25,8 +25,8 @@ services:
       - inception-net  
     env_file:  
       - .env 
-
-
+    restart: always  
+    
   phpwordpress:   
     build:   
       context: "./requirements/phpwordpress"  
@@ -38,8 +38,8 @@ services:
       - .env
     volumes:  
       - wp_data:/var/www/html
-
-
+    restart: always  
+    
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: application-phpmyadmin
@@ -50,10 +50,11 @@ services:
     environment:
       PMA_HOST: mariadb
       PMA_PORT: 3306
-      PMA_USER: ${MYSQL_USER}
-      PMA_PASSWORD: ${MYSQL_PASSWORD}
+      # PMA_USER: ${MYSQL_USER}
+      # PMA_PASSWORD: ${MYSQL_PASSWORD}
       UPLOAD_LIMIT: 128M
-
+    restart: always  
+    
 networks: 
   inception-net:
 

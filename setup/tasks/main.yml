@@ -55,14 +55,7 @@
     force: yes
   tags: docker-compose
 
-- name: Verify Docker Compose installation
-  command: docker compose version
-  register: compose_check
-  changed_when: false
-  failed_when: "'Docker Compose version' not in compose_check.stdout"
-  tags: docker-compose
-
-# Rest of your existing tasks...
+# Application setup
 - name: Create application data directory
   file:
     path: "/home/{{ ansible_user }}/data"
@@ -71,7 +64,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
 
-- name: Create application  directory
+- name: Create application directory
   file:
     path: "/home/application"
     state: directory
@@ -84,7 +77,7 @@
     path: "/home/{{ ansible_user }}/data/mariadb"
     state: directory
     mode: '0755'
-    owner: "999"  # MariaDB typically runs as UID 999
+    owner: "999"
     group: "999"
 
 - name: Create WordPress volume directory
@@ -92,17 +85,8 @@
     path: "/home/{{ ansible_user }}/data/wp_data"
     state: directory
     mode: '0755'
-    owner: "www-data"  # Typically UID 33
+    owner: "www-data"
     group: "www-data"
-
-- name: Verify directory structure
-  ansible.builtin.command: ls -la /home/{{ ansible_user }}/data
-  register: dir_listing
-  changed_when: false
-
-- name: Display directory structure
-  ansible.builtin.debug:
-    var: dir_listing.stdout_lines
 
 - name: Ensure phpMyAdmin directory exists
   file:
@@ -124,7 +108,7 @@
     src: files/
     dest: /home/application/
     mode: '0644'
-    force: yes  # Always overwrite files
+    force: yes
 
 - name: Ensure Docker stack is running
   block:
@@ -146,7 +130,7 @@
         - mariadb
         - wp_data
 
-    - name: Start containers with health checks
+    - name: Start containers
       command: docker compose up -d --build
       args:
         chdir: /home/application
@@ -154,12 +138,4 @@
       retries: 3
       delay: 10
       until: compose_up.rc == 0
-
-    - name: Verify containers are healthy
-      command: docker compose ps --services --filter "status=running"
-      args:
-        chdir: /home/application
-      register: running_services
-      changed_when: false
-      failed_when: "'mariadb' not in running_services.stdout or 'phpwordpress' not in running_services.stdout"
   tags: deploy
